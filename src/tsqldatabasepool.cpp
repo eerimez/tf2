@@ -22,6 +22,7 @@ constexpr auto CONN_NAME_FORMAT = "rdb%02d_%d";
 
 TSqlDatabasePool *TSqlDatabasePool::instance()
 {
+    tDebug("TSqlDatabasePool::instance");
     static TSqlDatabasePool *databasePool = []() {
         auto *pool = new TSqlDatabasePool;
         pool->maxConnects = Tf::app()->maxNumberOfThreadsPerAppServer();
@@ -33,11 +34,14 @@ TSqlDatabasePool *TSqlDatabasePool::instance()
 
 
 TSqlDatabasePool::TSqlDatabasePool() : QObject()
-{ }
+{
+    tDebug("TSqlDatabasePool::TSqlDatabasePool");
+}
 
 
 TSqlDatabasePool::~TSqlDatabasePool()
 {
+    tDebug("TSqlDatabasePool::~TSqlDatabasePool");
     timer.stop();
 
     for (int j = 0; j < Tf::app()->sqlDatabaseSettingsCount(); ++j) {
@@ -63,6 +67,7 @@ TSqlDatabasePool::~TSqlDatabasePool()
 
 static QString driverType(int databaseId)
 {
+    tDebug("TSqlDatabasePool::driverType");
     auto settings = Tf::app()->sqlDatabaseSettings(databaseId);
     QString key = QLatin1String("DriverType");
     QString type = settings.value(key).toString().trimmed();
@@ -76,6 +81,7 @@ static QString driverType(int databaseId)
 
 void TSqlDatabasePool::init()
 {
+    tDebug("TSqlDatabasePool::init");
     if (Tf::app()->sqlDatabaseSettingsCount() == 0) {
         tSystemWarn("SQL database not available");
         return;
@@ -118,6 +124,7 @@ void TSqlDatabasePool::init()
 
 QSqlDatabase TSqlDatabasePool::database(int databaseId)
 {
+    tDebug("TSqlDatabasePool::database");
     TSqlDatabase tdb;
 
     if (Q_LIKELY(databaseId >= 0 && databaseId < Tf::app()->sqlDatabaseSettingsCount())) {
@@ -173,6 +180,7 @@ QSqlDatabase TSqlDatabasePool::database(int databaseId)
 
 bool TSqlDatabasePool::setDatabaseSettings(TSqlDatabase &database, int databaseId)
 {
+    tDebug("TSqlDatabasePool::setDatabaseSettings");
     // Initiates database
     auto settings = Tf::app()->sqlDatabaseSettings(databaseId);
 
@@ -242,6 +250,7 @@ bool TSqlDatabasePool::setDatabaseSettings(TSqlDatabase &database, int databaseI
 
 void TSqlDatabasePool::pool(QSqlDatabase &database, bool forceClose)
 {
+    tDebug("TSqlDatabasePool::pool");
     if (database.isValid()) {
         int databaseId = getDatabaseId(database);
 
@@ -265,6 +274,7 @@ void TSqlDatabasePool::pool(QSqlDatabase &database, bool forceClose)
 
 void TSqlDatabasePool::timerEvent(QTimerEvent *event)
 {
+    tDebug("TSqlDatabasePool::timerEvent");
     if (event->timerId() == timer.timerId()) {
         QString name;
 
@@ -289,6 +299,7 @@ void TSqlDatabasePool::timerEvent(QTimerEvent *event)
 
 void TSqlDatabasePool::closeDatabase(QSqlDatabase &database)
 {
+    tDebug("TSqlDatabasePool::closeDatabase");
     int id = getDatabaseId(database);
     QString name = database.connectionName();
     database.close();
@@ -299,6 +310,7 @@ void TSqlDatabasePool::closeDatabase(QSqlDatabase &database)
 
 int TSqlDatabasePool::getDatabaseId(const QSqlDatabase &database)
 {
+    tDebug("TSqlDatabasePool::getDatabaseId");
     bool ok;
     int id = database.connectionName().mid(3,2).toInt(&ok);
 
